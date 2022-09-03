@@ -1,0 +1,20 @@
+name: ClassSystem
+version: '1.0-SNAPSHOT'
+main: classsystem.classsystem.ClassSystem
+api-version: 1.18
+authors: [ SleepingRaven ]
+description: A Class System for my MMORPG
+commands:
+  fly:
+    description: Toggles flight
+    usage: /fly
+    aliases: [f, flying, toggleflight]
+    permission: fly
+  god:
+    description: Toggles God Mode
+    usage: /god
+    aliases: [g, godmode, togglegod]
+    permission: god
+  menu:
+    description: Opens the menu!
+    usage: /menu
