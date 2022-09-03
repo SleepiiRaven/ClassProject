@@ -142,8 +142,10 @@ public class PlayerAbilityHandler implements Listener {
                 if (p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_SWORD)) {
                     //region Shadow Sneak
                     Location targetLocation;
+                    Vector lookAt = pLocation.getDirection();
                     //region Teleport
                     RayTraceResult traceResult = p.rayTraceBlocks(4);
+                    System.out.println(traceResult);
                     if (traceResult == null) {
                         Vector pDirection = pLocation.getDirection();
                         pDirection.multiply(4);
@@ -151,14 +153,15 @@ public class PlayerAbilityHandler implements Listener {
                     } else {
                         targetLocation = traceResult.getHitBlock().getLocation();
                     }
-                    p.teleport(targetLocation);
-                    //endregion
                     //region Particles
                     p.getWorld().spawnParticle(Particle.ASH, pLocation, 10);
                     p.getWorld().spawnParticle(Particle.ASH, targetLocation, 10);
                     //endregion
+                    p.teleport(targetLocation);
+                    p.getLocation().setDirection(lookAt);
+                    //endregion
                     //region Sound
-                    p.playSound(p, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.5f);
+                    p.playSound(p, Sound.ITEM_CHORUS_FRUIT_TELEPORT, 1.0f, 0.5f);
                     //endregion
                     //endregion
                 }
