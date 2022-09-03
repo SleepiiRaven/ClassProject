@@ -2,6 +2,7 @@ package classsystem.classsystem.handlers;
 
 import classsystem.classsystem.ClassSystem;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -10,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.BoundingBox;
+import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.*;
@@ -36,7 +38,7 @@ public class PlayerAbilityHandler implements Listener {
     }
 
     @EventHandler
-    public void onLeftClick(PlayerInteractEvent e) {
+    public void onMouseAction(PlayerInteractEvent e) {
         //region Set Variables
         Player p = e.getPlayer();
         String pUUID = p.getUniqueId().toString();
@@ -111,10 +113,12 @@ public class PlayerAbilityHandler implements Listener {
                             // make sure its a living entity, not an armor stand or something, continue skips the current loop
                             if (!(closebyMonster instanceof LivingEntity) || (closebyMonster == p)) continue;
                             LivingEntity livingMonster = (LivingEntity) closebyMonster;
+                            // Get the entitie's collision box and the viewpos' xyz
                             BoundingBox boundingBox = livingMonster.getBoundingBox();
                             double viewPosX = viewPos.getX();
                             double viewPosY = viewPos.getY();
                             double viewPosZ = viewPos.getZ();
+                            // if our particle goes thru the enemy's hitbox, we keep going through the loop, if we don't we use continue;
                             if (!(boundingBox.contains(viewPosX, viewPosY, viewPosZ))) continue;
                             livingMonster.damage(damage, p);
                             Vector viewNormalized = (viewDir.normalize()).multiply(kb);
@@ -137,7 +141,25 @@ public class PlayerAbilityHandler implements Listener {
             if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
                 if (p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_SWORD)) {
                     //region Shadow Sneak
-                    p.sendMessage("Shadow sneak! Rogue!");
+                    Location targetLocation;
+                    //region Teleport
+                    RayTraceResult traceResult = p.rayTraceBlocks(4);
+                    if (traceResult == null) {
+                        Vector pDirection = pLocation.getDirection();
+                        pDirection.multiply(4);
+                        targetLocation = pLocation.add(pDirection);
+                    } else {
+                        targetLocation = traceResult.getHitBlock().getLocation();
+                    }
+                    p.teleport(targetLocation);
+                    //endregion
+                    //region Particles
+                    p.getWorld().spawnParticle(Particle.ASH, pLocation, 10);
+                    p.getWorld().spawnParticle(Particle.ASH, targetLocation, 10);
+                    //endregion
+                    //region Sound
+                    p.playSound(p, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.5f);
+                    //endregion
                     //endregion
                 }
             }
