@@ -1,8 +1,11 @@
 classsystem\classsystem\commands\God.class
 classsystem\classsystem\handlers\classhandler\PlayerClassListener.class
 classsystem\classsystem\handlers\PlaceBreakHandler.class
+classsystem\classsystem\handlers\classhandler\PlayerScoutHandler.class
 classsystem\classsystem\ClassSystem.class
 classsystem\classsystem\commands\Fly.class
+classsystem\classsystem\handlers\classhandler\PlayerNoneHandler.class
+classsystem\classsystem\handlers\classhandler\PlayerSummonerHandler.class
 classsystem\classsystem\handlers\PlayerHandler.class
 classsystem\classsystem\handlers\SleepHandler.class
 classsystem\classsystem\handlers\classhandler\PlayerAvatarHandler.class
@@ -11,5 +14,7 @@ classsystem\classsystem\handlers\classhandler\PlayerClass.class
 classsystem\classsystem\handlers\classhandler\PlayerRogueHandler.class
 classsystem\classsystem\commands\Menu.class
 classsystem\classsystem\handlers\classhandler\PlayerMageHandler.class
+classsystem\classsystem\handlers\classhandler\PlayerClericHandler.class
+classsystem\classsystem\handlers\classhandler\PlayerWarriorHandler.class
 classsystem\classsystem\commands\Avatar.class
 classsystem\classsystem\handlers\classhandler\PlayerClassTemplate.class

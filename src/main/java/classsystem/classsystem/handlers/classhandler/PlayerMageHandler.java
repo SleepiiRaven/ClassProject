@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 
-public class PlayerMageHandler extends PlayerClassTemplate implements Listener {
+public class PlayerMageHandler extends PlayerClassTemplate {
 
 
     @Override
@@ -28,17 +28,17 @@ public class PlayerMageHandler extends PlayerClassTemplate implements Listener {
         Player p = e.getPlayer();
         String pUUID = p.getUniqueId().toString();
         Location pLocation = p.getLocation();
-        int dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
-        int rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
-        int kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
+        double dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
+        double rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
+        double kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
         //endregion
         //region CLASS ABILITIES
         if (p.getInventory().getItemInMainHand().getType().equals(Material.STICK)) {
             if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) {
                 //region Ethereal Soul
                 //region Damage
-                int range = 25 * rangeModifier;
-                int damage = 5 * dmgModifier;
+                int range = (int) (25 * rangeModifier);
+                int damage = (int) (5 * dmgModifier);
                 double kb = ThreadLocalRandom.current().nextDouble(0.3, 0.5) * kbModifier;
                 List<Entity> closebyMonsters = p.getNearbyEntities(range, range, range);
                 for (Entity closebyMonster : closebyMonsters) {
@@ -66,8 +66,8 @@ public class PlayerMageHandler extends PlayerClassTemplate implements Listener {
             if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 //region Mana Burst
                 //region Variables
-                int range = 25 * rangeModifier;
-                int damage = 10 * dmgModifier;
+                int range = (int) (25 * rangeModifier);
+                int damage = (int) (10 * dmgModifier);
                 double kb = ThreadLocalRandom.current().nextDouble(0.3, 0.5) * kbModifier;
                 //endregion
                 //region Shoot Loop

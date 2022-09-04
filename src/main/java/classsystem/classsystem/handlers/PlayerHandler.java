@@ -44,13 +44,16 @@ public class PlayerHandler implements Listener, ClassSystem.Variables {
             plugin.getConfig().set(pUUIDString + ".class", "none");
         }
         if (plugin.getConfig().get(pUUIDString + ".dmgMultiplier") == null) {
-            plugin.getConfig().set(pUUIDString + ".dmgMultiplier", 1);
+            plugin.getConfig().set(pUUIDString + ".dmgMultiplier", 1.0);
         }
         if (plugin.getConfig().get(pUUIDString + ".kbMultiplier") == null) {
-            plugin.getConfig().set(pUUIDString + ".kbMultiplier", 1);
+            plugin.getConfig().set(pUUIDString + ".kbMultiplier", 1.0);
         }
         if (plugin.getConfig().get(pUUIDString + ".rangeMultiplier") == null) {
-            plugin.getConfig().set(pUUIDString + ".rangeMultiplier", 1);
+            plugin.getConfig().set(pUUIDString + ".rangeMultiplier", 1.0);
+        }
+        if (plugin.getConfig().get(pUUIDString + ".hpMultiplier") == null) {
+            plugin.getConfig().set(pUUIDString + ".hpMultiplier", 1.0);
         }
         ItemStack blade = new ItemStack(Material.DIAMOND_SWORD, 1);
         Inventory inv = p.getInventory();

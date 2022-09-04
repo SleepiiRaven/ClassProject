@@ -5,7 +5,12 @@ import java.util.function.Supplier;
 public enum PlayerClass {
     MAGE("mage",PlayerMageHandler::new),
     ROUGE("rogue",PlayerRogueHandler::new),
-    AVATAR("avatar",PlayerAvatarHandler::new);
+    AVATAR("avatar",PlayerAvatarHandler::new),
+    CLERIC("cleric",PlayerClericHandler::new),
+    SCOUT("scout",PlayerScoutHandler::new),
+    SUMMONER("summoner",PlayerSummonerHandler::new),
+    WARRIOR("warrior",PlayerWarriorHandler::new),
+    NONE("none",PlayerNoneHandler::new);
 
     final String name;
     Supplier<PlayerClassTemplate> supplier;

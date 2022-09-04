@@ -28,13 +28,9 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         Player p = e.getPlayer();
         String pUUID = p.getUniqueId().toString();
         Location pLocation = p.getLocation();
-        int dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
-        int rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
-        int kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
-        //endregion
-        //region Check Class
-        String playerClass = plugin.getConfig().getString(pUUID + ".class");
-        if (playerClass == null || playerClass.equals("none")) return;
+        double dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
+        double rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
+        double kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
         //endregion
         //region CLASS ABILITIES
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
@@ -43,7 +39,7 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
                 //region Variables
                 Location targetLocation;
                 Vector targetLook = p.getEyeLocation().getDirection();
-                int distance = 8 * rangeModifier;
+                int distance = (int) (8 * rangeModifier);
                 double range = 2 * rangeModifier;
                 //endregion
                 //region Teleport

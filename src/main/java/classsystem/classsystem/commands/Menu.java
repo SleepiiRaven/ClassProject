@@ -43,31 +43,37 @@
                 //region Rogue
                 case 11:
                     playerClass = "rogue";
+                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
                     break;
                     //endregion
                 //region Warrior
                 case 12:
                     playerClass = "warrior";
+                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
                     break;
                     //endregion
                 //region Mage
                 case 13:
                     playerClass = "mage";
+                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
                     break;
                     //endregion
                 //region Scout
                 case 14:
                     playerClass = "scout";
+                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
                     break;
                     //endregion
                 //region Cleric
                 case 15:
                     playerClass = "cleric";
+                    p.setMaxHealth(80.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
                     break;
                     //endregion
                 //region Default
                 default:
                     playerClass = "none";
+                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
                     break;
                     //endregion
             }
