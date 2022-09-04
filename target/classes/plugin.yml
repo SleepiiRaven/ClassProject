@@ -18,3 +18,7 @@ commands:
   menu:
     description: Opens the menu!
     usage: /menu
+  avatar:
+    description: Gives you the ultimate class!
+    usage: /avatar
+    permission: avatar

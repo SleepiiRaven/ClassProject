@@ -1,9 +1,15 @@
 classsystem\classsystem\commands\God.class
-classsystem\classsystem\commands\Menu.class
+classsystem\classsystem\handlers\classhandler\PlayerClassListener.class
 classsystem\classsystem\handlers\PlaceBreakHandler.class
-classsystem\classsystem\handlers\PlayerAbilityHandler.class
 classsystem\classsystem\ClassSystem.class
 classsystem\classsystem\commands\Fly.class
 classsystem\classsystem\handlers\PlayerHandler.class
 classsystem\classsystem\handlers\SleepHandler.class
+classsystem\classsystem\handlers\classhandler\PlayerAvatarHandler.class
 classsystem\classsystem\ClassSystem$Variables.class
+classsystem\classsystem\handlers\classhandler\PlayerClass.class
+classsystem\classsystem\handlers\classhandler\PlayerRogueHandler.class
+classsystem\classsystem\commands\Menu.class
+classsystem\classsystem\handlers\classhandler\PlayerMageHandler.class
+classsystem\classsystem\commands\Avatar.class
+classsystem\classsystem\handlers\classhandler\PlayerClassTemplate.class
