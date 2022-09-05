@@ -70,6 +70,11 @@
                     p.setMaxHealth(80.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
                     break;
                     //endregion
+                //region Summoner
+                case 23:
+                    playerClass = "summoner";
+                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                //endregion
                 //region Default
                 default:
                     playerClass = "none";
@@ -95,10 +100,11 @@
             // args: owner of inventory, size (columns by rows)
             Inventory inv = Bukkit.createInventory(p, 9 * 3, invName);
             inv.setItem(11, getItem(new ItemStack(Material.DIAMOND_SWORD), "&6Rogue", "&eClick to become a rogue.", "Rogues deal very high damage,", "but they're only single target."));
-            inv.setItem(12, getItem(new ItemStack(Material.DIAMOND_AXE), "&6Warrior", "&eClick to become a warrior.", "Warriors deal moderate damage,", "with a moderate amount of AOE."));
+            inv.setItem(12, getItem(new ItemStack(Material.DIAMOND_AXE), "&6Warrior", "&eClick to become a warrior.", "Warriors deal moderate damage,", "and they are very tanky."));
             inv.setItem(13, getItem(new ItemStack(Material.STICK), "&6Mage", "&eClick to become a mage.", "Mages deal high damage and AOE,", "but they aren't tanky."));
-            inv.setItem(14, getItem(new ItemStack(Material.BOW), "&6Scout", "&eClick to become a scout.", "Scouts deal moderate damage,", "and they're ranged."));
-            inv.setItem(15, getItem(new ItemStack(Material.TOTEM_OF_UNDYING), "&6Cleric", "&eClick to become a cleric.", "Clerics deal very low damage,", "but can heal their allies."));
+            inv.setItem(14, getItem(new ItemStack(Material.BOW), "&6Scout", "&eClick to become a scout.", "Scouts harness ranged weapons such as bows", "to deal a moderate amount of damage."));
+            inv.setItem(15, getItem(new ItemStack(Material.DIAMOND_HOE), "&6Cleric", "&eClick to become a cleric.", "Clerics harness their own life force,", "to heal their allies and damage their foes."));
+            inv.setItem(23, getItem(new ItemStack(Material.TOTEM_OF_UNDYING), "&6Summoner", "&eClick to become a summoner.", "Summoners harness souls to deal high damage,", "but normally deal low damage."));
 
             p.openInventory(inv);
 

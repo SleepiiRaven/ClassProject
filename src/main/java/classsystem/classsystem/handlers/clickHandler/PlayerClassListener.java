@@ -1,7 +1,6 @@
-package classsystem.classsystem.handlers.classhandler;
+package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

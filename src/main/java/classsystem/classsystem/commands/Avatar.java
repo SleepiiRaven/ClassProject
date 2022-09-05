@@ -20,9 +20,10 @@ public class Avatar implements CommandExecutor {
         String pUUIDString = player.getUniqueId().toString();
 
         ClassSystem plugin = ClassSystem.getInstance();
+        player.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
         plugin.getConfig().set(pUUIDString + ".class", "avatar");
         plugin.saveConfig();
-
+        player.sendMessage(ChatColor.GOLD + "You are now the Avatar");
         return true;
     }
 }
