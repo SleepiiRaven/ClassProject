@@ -1,6 +1,7 @@
 package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
+import classsystem.classsystem.CooldownManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -20,6 +21,8 @@ import sun.jvm.hotspot.debugger.win32.coff.DebugVC50SymbolEnums;
 import java.util.Collection;
 
 public class PlayerRogueHandler extends PlayerClassTemplate {
+    ClassSystem plugin = ClassSystem.getInstance();
+    CooldownManager cooldownManager = plugin.getCdInstance();
 
     @Override
     public void onTrigger(PlayerInteractEvent e) {
@@ -37,6 +40,7 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         if (p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_SWORD)) {
             if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
                 if (!p.isSneaking()) {
+                    //region Teleport
                     //region Teleport
                     Location target = null;
                     Player player = e.getPlayer();

@@ -1,6 +1,7 @@
 package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
+import classsystem.classsystem.CooldownManager;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Monster;
@@ -16,6 +17,8 @@ import org.bukkit.util.Vector;
 import java.util.Collection;
 
 public class PlayerClericHandler extends PlayerClassTemplate {
+    ClassSystem plugin = ClassSystem.getInstance();
+    CooldownManager cooldownManager = plugin.getCdInstance();
     @Override
     public void onTrigger(PlayerInteractEvent e) {
         ClassSystem plugin = ClassSystem.getInstance();
@@ -27,6 +30,7 @@ public class PlayerClericHandler extends PlayerClassTemplate {
         double dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
         double rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
         double kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
+        double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
 
         //region CLASS ABILITIES
         if (p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_HOE)) {
@@ -34,7 +38,10 @@ public class PlayerClericHandler extends PlayerClassTemplate {
                 double range = 4 * rangeModifier;
                 Collection<Entity> entitiesInRange = p.getNearbyEntities(range, range, range);
                 if (p.isSneaking()) {
-                    //region Demeter's Saturation
+                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Demeter's Blessing"))) return;
+                    //region Demeter's Blessing
+                    long cooldown = (long) (5000 * cdModifier);
+                    cooldownManager.setCooldownFromNow(p.getUniqueId(), "Demeter's Blessing", cooldown);
                     summonCircle(pLocation, (int)range, Particle.HEART);
                     for (Entity entity : entitiesInRange) {
                         if (!(entity instanceof Player)) continue;
@@ -44,7 +51,10 @@ public class PlayerClericHandler extends PlayerClassTemplate {
                     p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20, (int) hpModifier));
                     //endregion
                 } else {
+                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Dionysus' Intoxication"))) return;
                     //region Dionysus' Intoxication
+                    long cooldown = (long) (5000 * cdModifier);
+                    cooldownManager.setCooldownFromNow(p.getUniqueId(), "Demeter's Blessing", cooldown);
                     for (Entity entity : entitiesInRange) {
                         summonCircle(pLocation, (int)range, Particle.SOUL);
                         if (!(entity instanceof Monster)) continue;
@@ -58,7 +68,10 @@ public class PlayerClericHandler extends PlayerClassTemplate {
             }
             if (e.getAction() == Action.RIGHT_CLICK_AIR) {
                 if (!p.isSneaking()) {
+                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Hermes' Leap"))) return;
                     //region Hermes' Leap
+                    long cooldown = (long) (3000 * cdModifier);
+                    cooldownManager.setCooldownFromNow(p.getUniqueId(), "Hermes' Leap", cooldown);
                     summonCircle(pLocation, 4, Particle.CLOUD);
                     Vector jumpSpeed = new Vector(3, 2.5, 3).multiply(kbModifier);
                     Vector pLooking = pLocation.getDirection();
@@ -67,7 +80,10 @@ public class PlayerClericHandler extends PlayerClassTemplate {
                     p.playSound(pLocation, Sound.ENTITY_SLIME_SQUISH, 1, 1);
                     //endregion
                 } else {
+                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Aphrodite's Love"))) return;
                     //region Aphrodite's Love
+                    long cooldown = (long) (500 * cdModifier);
+                    cooldownManager.setCooldownFromNow(p.getUniqueId(), "Aphrodite's Love", cooldown);
                     double range = 8 * rangeModifier;
                     double healing = 4 * hpModifier;
                     RayTraceResult traceResult = p.getWorld().rayTraceEntities(p.getEyeLocation(), p.getEyeLocation().getDirection(), range, (entity -> {

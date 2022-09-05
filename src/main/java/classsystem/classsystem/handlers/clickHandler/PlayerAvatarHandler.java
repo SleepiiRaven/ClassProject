@@ -1,6 +1,7 @@
 package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
+import classsystem.classsystem.CooldownManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;

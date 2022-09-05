@@ -16,10 +16,13 @@ import java.util.List;
 public final class ClassSystem extends JavaPlugin {
     private static ClassSystem instance;
 
+    private CooldownManager cdInstance;
+    public CooldownManager getCdInstance() {
+        return cdInstance;
+    }
     public static ClassSystem getInstance() {
         return instance;
     }
-
     //region Variables
     public interface Variables {
         List<String> godMode = new ArrayList<>();
@@ -29,6 +32,7 @@ public final class ClassSystem extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        cdInstance = new CooldownManager();
         saveDefaultConfig();
         //region Register Commands
         getCommand("fly").setExecutor(new Fly());

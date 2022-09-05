@@ -1,6 +1,7 @@
 package classsystem.classsystem.handlers;
 
 import classsystem.classsystem.ClassSystem;
+import classsystem.classsystem.CooldownManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +32,8 @@ public class PlayerHandler implements Listener {
         Player p = event.getPlayer();
         UUID pUUID = p.getUniqueId();
         String pUUIDString = pUUID.toString();
+        CooldownManager cooldownManager = plugin.getCdInstance();
+        cooldownManager.createContainer(pUUID);
         //region Set Config
         if (plugin.getConfig().get(pUUIDString + ".class") == null) {
             plugin.getConfig().set(pUUIDString + ".class", "none");
@@ -45,6 +49,9 @@ public class PlayerHandler implements Listener {
         }
         if (plugin.getConfig().get(pUUIDString + ".hpMultiplier") == null) {
             plugin.getConfig().set(pUUIDString + ".hpMultiplier", 1.0);
+        }
+        if (plugin.getConfig().get(pUUIDString + ".cdMultiplier") == null) {
+            plugin.getConfig().set(pUUIDString + ".cdMultiplier", 1.0);
         }
         plugin.saveConfig();
         ///endregion
@@ -69,5 +76,13 @@ public class PlayerHandler implements Listener {
         // Add the item to the player's inventory
         inv.addItem(blade);
         //endregion
+    }
+
+    @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        Player p = event.getPlayer();
+        UUID pUUID = p.getUniqueId();
+        CooldownManager cooldownManager = plugin.getCdInstance();
+        cooldownManager.removeContainer(pUUID);
     }
 }

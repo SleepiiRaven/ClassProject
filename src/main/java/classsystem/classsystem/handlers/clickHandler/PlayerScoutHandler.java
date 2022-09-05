@@ -1,6 +1,7 @@
 package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
+import classsystem.classsystem.CooldownManager;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -15,6 +16,8 @@ import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 public class PlayerScoutHandler extends PlayerClassTemplate {
+    ClassSystem plugin = ClassSystem.getInstance();
+    CooldownManager cooldownManager = plugin.getCdInstance();
 
     @Override
     public void onTrigger(PlayerInteractEvent e) {
