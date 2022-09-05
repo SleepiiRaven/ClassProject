@@ -54,7 +54,7 @@ public class DamageHandler implements Listener, ClassSystem.Variables {
             if (!(plugin.getConfig().get(shooterID + ".class").equals("scout"))) return;
             // the D after the 4 is telling java the number is a double not an int
             double damage = e.getDamage()*dmg;
-            entity.damage(damage, shooter);
+            entity.damage(damage, a);
             a.remove();
             e.setCancelled(true);
         }

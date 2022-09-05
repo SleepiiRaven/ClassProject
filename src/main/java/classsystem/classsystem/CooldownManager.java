@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class CooldownManager {
-
     private final Map<UUID, CooldownContainer> cooldownContainerMap = new HashMap<>();
 
     public CooldownContainer createContainer(UUID playerId) {
@@ -27,7 +26,7 @@ public class CooldownManager {
         container.setCooldownFromNow(name, millis);
     }
 
-    public Long getCooldownLeft (UUID pUUID, String name) {
+    public long getCooldownLeft (UUID pUUID, String name) {
         CooldownContainer container = getContainer(pUUID);
         return container.getCooldownLeft(name);
     }

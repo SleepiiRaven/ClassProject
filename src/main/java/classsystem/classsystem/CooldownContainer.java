@@ -25,7 +25,7 @@ public class CooldownContainer implements ConfigurationSerializable {
     }
 
     public long getCooldownLeft(String name) {
-        return System.currentTimeMillis() - cooldownMap.getOrDefault(name, Long.MAX_VALUE);
+        return cooldownMap.getOrDefault(name, 0L) - System.currentTimeMillis();
     }
 
     public boolean isCooldownDone(String name) {
