@@ -1,7 +1,6 @@
 package classsystem.classsystem.handlers.clickHandler;
 
-import classsystem.classsystem.ClassSystem;
-import classsystem.classsystem.CooldownManager;
+import classsystem.classsystem.*;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -9,6 +8,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -18,12 +18,14 @@ import org.bukkit.util.Vector;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 
 public class PlayerMageHandler extends PlayerClassTemplate {
     ClassSystem plugin = ClassSystem.getInstance();
     CooldownManager cooldownManager = plugin.getCdInstance();
+    PartyManager partyManager = plugin.getPartyInstance();
     @Override
     public void onTrigger(PlayerInteractEvent e) {
         //region Set Variables
@@ -38,20 +40,20 @@ public class PlayerMageHandler extends PlayerClassTemplate {
         double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
         //endregion
         //region CLASS ABILITIES
-        if (p.getInventory().getItemInMainHand().getType().equals(Material.STICK)) {
+        if (ItemManager.mageWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
             if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) {
                 if (p.isSneaking()) {
                     if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Devour"))) return;
-                    devour(p, rangeModifier);
+                    devour(p, rangeModifier, cooldownManager, cdModifier);
                 } else {
-                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Ethereal Soul"))) return;
-                    etherealSoul(p, pLocation, dmgModifier, rangeModifier, kbModifier, cdModifier);
+                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Mana Burst"))) return;
+                    manaBurst(p, dmgModifier, rangeModifier, kbModifier, cooldownManager, cdModifier);
                 }
             }
             if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 if (p.isSneaking()) {
-                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Mana Burst"))) return;
-                    manaBurst(p, dmgModifier, rangeModifier, kbModifier, cooldownManager, cdModifier);
+                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Ethereal Soul"))) return;
+                    etherealSoul(p, pLocation, dmgModifier, rangeModifier, kbModifier, cdModifier);
                 } else {
                     if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Fire Jump"))) return;
                     fireJump(plugin, p, pLocation, cooldownManager, cdModifier);
@@ -61,7 +63,12 @@ public class PlayerMageHandler extends PlayerClassTemplate {
         //endregion
     }
 
-    private static void fireJump(ClassSystem plugin, Player p, Location pLocation, CooldownManager cooldownManager, double cdModifier) {
+    public void onTriggerSwap(PlayerSwapHandItemsEvent e) {
+
+    }
+
+
+    private void fireJump(ClassSystem plugin, Player p, Location pLocation, CooldownManager cooldownManager, double cdModifier) {
         //region Fire Jump
         long cooldown = (long) (8000 / cdModifier);
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Fire Jump", cooldown);
@@ -71,20 +78,21 @@ public class PlayerMageHandler extends PlayerClassTemplate {
         fireballContainer.set(new NamespacedKey(plugin, "fireJump"), PersistentDataType.STRING, "fireJump");
         //endregion
     }
-    private static void manaBurst(Player p, double dmgModifier, double rangeModifier, double kbModifier, CooldownManager cooldownManager, double cdModifier) {
+    private void manaBurst(Player p, double dmgModifier, double rangeModifier, double kbModifier, CooldownManager cooldownManager, double cdModifier) {
          //region Mana Burst
-        long cooldown = (long) (3000 / cdModifier);
+        long cooldown = (long) (1000 / cdModifier);
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Mana Burst", cooldown);
         //region Variables
         double range = 25 * rangeModifier;
+        double distance = 20 * rangeModifier;
         double collision = 1 * rangeModifier;
-        double damage = 10 * dmgModifier;
+        double damage = 3 * dmgModifier;
         double kb = ThreadLocalRandom.current().nextDouble(0.3, 0.5) * kbModifier;
         //endregion
         //region Shoot Loop
         Location viewPos = p.getEyeLocation();
         Vector viewDir = viewPos.getDirection();
-        for (double t = 0; t < 10; t += 0.5) {
+        for (double t = 0; t < distance; t += 0.5) {
             //region Particles
             double x = viewDir.getX() * t;
             double y = viewDir.getY() * t;
@@ -98,13 +106,16 @@ public class PlayerMageHandler extends PlayerClassTemplate {
                 // .distance is resource intensive, so get it squared (SO SQUARE YOUR RANGE)
                 // make sure it's a living entity, not an armor stand or something, continue skips the current loop
                 if (!(closebyMonster instanceof LivingEntity) || (closebyMonster == p)) continue;
+                if (partyManager.findParty(p.getUniqueId()) != null) {
+                    if (partyManager.findParty(closebyMonster.getUniqueId()) == partyManager.findParty(p.getUniqueId())) continue;
+                }
                 LivingEntity livingMonster = (LivingEntity) closebyMonster;
                 // Get the entitie's collision box and the viewpos' xyz
                 BoundingBox monsterBoundingBox = livingMonster.getBoundingBox();
-                BoundingBox collisionBox = BoundingBox.of(viewPos, collision,collision,collision);
+                BoundingBox collisionBox = BoundingBox.of(viewPos, collision, collision, collision);
                 /**double viewPosX = viewPos.getX();
-                double viewPosY = viewPos.getY();
-                double viewPosZ = viewPos.getZ();**/
+                 double viewPosY = viewPos.getY();
+                 double viewPosZ = viewPos.getZ();**/
                 // if our particle goes through the enemy's hitbox, we keep going through the loop, if we don't we use continue;
                 if (!(monsterBoundingBox.overlaps(collisionBox))) continue;
                 livingMonster.damage(damage, p);
@@ -122,7 +133,7 @@ public class PlayerMageHandler extends PlayerClassTemplate {
     }
     private void etherealSoul(Player p, Location pLocation, double dmgModifier, double rangeModifier, double kbModifier, double cdModifier) {
         //region Ethereal Soul
-        long cooldown = (long) (1500 / cdModifier);
+        long cooldown = (long) (1000 / cdModifier);
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Ethereal Soul", cooldown);
         //region Damage
         double range = 25 * rangeModifier;
@@ -130,6 +141,9 @@ public class PlayerMageHandler extends PlayerClassTemplate {
         double kb = ThreadLocalRandom.current().nextDouble(0.3, 0.5) * kbModifier;
         List<Entity> closebyMonsters = p.getNearbyEntities(range, range, range);
         for (Entity closebyMonster : closebyMonsters) {
+            if (partyManager.findParty(p.getUniqueId()) != null) {
+                if (partyManager.findParty(closebyMonster.getUniqueId()) == partyManager.findParty(p.getUniqueId())) continue;
+            }
             Location eLocation = closebyMonster.getLocation();
             // .distance is resource intensive, so get it squared (SO SQUARE YOUR RANGE)
             double distance = eLocation.distanceSquared(pLocation);
@@ -152,15 +166,17 @@ public class PlayerMageHandler extends PlayerClassTemplate {
         //endregion
         //endregion
     }
-    private static void devour(Player p, double rangeModifier) {
+    private void devour(Player p, double rangeModifier, CooldownManager cooldownManager, double cdModifier) {
         //region Devour
+        long cooldown = (long) (100 / cdModifier);
         double range = 30 * rangeModifier;
         RayTraceResult traceResult = p.rayTraceBlocks(range);
         if (traceResult != null) {
+            cooldownManager.setCooldownFromNow(p.getUniqueId(),"Devour", cooldown);
             Location blockLocation = traceResult.getHitBlock().getLocation();
-            p.getWorld().spawnEntity(blockLocation.add(0,1,0), EntityType.EVOKER_FANGS);
+            Entity evokerFangs = p.getWorld().spawnEntity(blockLocation.add(0, 1, 0), EntityType.EVOKER_FANGS);
+            evokerFangs.addScoreboardTag(p.getUniqueId().toString());
         }
-        //endregion
     }
 
     public void summonCircle(Location location, int size, Particle particle) {

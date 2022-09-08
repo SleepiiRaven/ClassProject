@@ -2,6 +2,8 @@ package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
 import classsystem.classsystem.CooldownManager;
+import classsystem.classsystem.ItemManager;
+import classsystem.classsystem.PartyManager;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -11,6 +13,7 @@ import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -23,6 +26,8 @@ import java.util.Collection;
 public class PlayerRogueHandler extends PlayerClassTemplate {
     ClassSystem plugin = ClassSystem.getInstance();
     CooldownManager cooldownManager = plugin.getCdInstance();
+
+    PartyManager partyManager = plugin.getPartyInstance();
 
     @Override
     public void onTrigger(PlayerInteractEvent e) {
@@ -38,14 +43,14 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
         //endregion
         //region CLASS ABILITIES
-        if (p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_SWORD)) {
+        if (ItemManager.rogueWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
             if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
                 if (!p.isSneaking()) {
                     if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Teleport"))) return;
                     teleport(e, p, pLocation, rangeModifier, cdModifier);
                 } else {
                     if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Shadow Sneak"))) return;
-                    if (shadowSneak(p, pLocation, rangeModifier, cdModifier, cooldownManager)) return;
+                    if (!(shadowSneak(p, pLocation, rangeModifier, cdModifier, cooldownManager))) return;
                 }
             }
             if (e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.LEFT_CLICK_AIR) {
@@ -55,6 +60,9 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
             }
         }
         //endregion
+    }
+    public void onTriggerSwap(PlayerSwapHandItemsEvent e) {
+
     }
 
     private void teleport(PlayerInteractEvent e, Player p, Location pLocation, double rangeModifier, double cdModifier) {
@@ -91,17 +99,21 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         //endregion
         //endregion
     }
-    private static boolean shadowSneak(Player p, Location pLocation, double rangeModifier, double cdModifier, CooldownManager cooldownManager) {
+
+    private boolean shadowSneak(Player p, Location pLocation, double rangeModifier, double cdModifier, CooldownManager cooldownManager) {
         //region Shadow Sneak
         long cooldown = (long) (3000 / cdModifier);
-        cooldownManager.setCooldownFromNow(p.getUniqueId(), "Shadow Sneak", cooldown);
         double range = 32 * rangeModifier;
         RayTraceResult traceResult = p.getWorld().rayTraceEntities(p.getEyeLocation(), p.getEyeLocation().getDirection(), range, (entity -> {
             return entity != p;
         }));
         if (traceResult == null) return true;
         if (!(traceResult.getHitEntity() instanceof LivingEntity)) return true;
-        LivingEntity entity =(LivingEntity) traceResult.getHitEntity();
+        LivingEntity entity = (LivingEntity) traceResult.getHitEntity();
+        if (partyManager.findParty(p.getUniqueId()) != null) {
+            if (partyManager.findParty(entity.getUniqueId()) == partyManager.findParty(p.getUniqueId())) return false;
+        }
+        cooldownManager.setCooldownFromNow(p.getUniqueId(), "Shadow Sneak", cooldown);
         Location targetLocation = entity.getEyeLocation().add(pLocation.getDirection());
         if (targetLocation.getBlock().getType().isSolid()) {
             targetLocation = entity.getEyeLocation();
@@ -114,11 +126,11 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         p.teleport(targetLocation);
         p.playSound(pLocation, Sound.ENTITY_FOX_TELEPORT, 1, 1);
         return false;
-        //endregion
     }
-    private static void smokeBomb(Player p, Location pLocation, double rangeModifier, double cdModifier, CooldownManager cooldownManager) {
+    //endregion
+    private void smokeBomb(Player p, Location pLocation, double rangeModifier, double cdModifier, CooldownManager cooldownManager) {
         //region Smoke Bomb
-        long cooldown = (long) (4500 / cdModifier);
+        long cooldown = (long) (10000 / cdModifier);
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Smoke Bomb", cooldown);
         double range = 8* rangeModifier;
         p.getWorld().spawnParticle(Particle.SMOKE_LARGE, pLocation, 1000);
@@ -126,6 +138,9 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         Collection<Entity> nearbyEntities = p.getNearbyEntities(range,range,range);
         for (Entity nearbyEntity : nearbyEntities) {
             if (!(nearbyEntity instanceof LivingEntity)) continue;
+            if (partyManager.findParty(p.getUniqueId()) != null) {
+                if (partyManager.findParty(nearbyEntity.getUniqueId()) == partyManager.findParty(p.getUniqueId())) continue;
+            }
             LivingEntity entity = (LivingEntity) nearbyEntity;
             entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 2));
             entity.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 5));

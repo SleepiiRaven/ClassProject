@@ -15,15 +15,13 @@
     import org.bukkit.inventory.ItemStack;
     import org.bukkit.inventory.meta.ItemMeta;
 
-    import java.io.File;
     import java.util.ArrayList;
     import java.util.List;
-    import java.util.Timer;
     import java.util.UUID;
 
-    public class Menu implements CommandExecutor, ClassSystem.Variables, Listener {
+    public class MenuCommand implements CommandExecutor, ClassSystem.Variables, Listener {
         private final ClassSystem plugin;
-        public Menu(ClassSystem plugin) {
+        public MenuCommand(ClassSystem plugin) {
             this.plugin = plugin;
         }
         private String invName = "Class Selector";

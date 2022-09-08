@@ -22,3 +22,7 @@ commands:
     description: Gives you the ultimate class!
     usage: /avatar
     permission: avatar
+  party:
+    description: Party invite
+    usage: /party [invite/accept/remove/leave/list]
+    aliases: [p]

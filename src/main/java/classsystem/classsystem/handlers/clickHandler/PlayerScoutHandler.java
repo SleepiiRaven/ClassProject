@@ -2,12 +2,16 @@ package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
 import classsystem.classsystem.CooldownManager;
+import classsystem.classsystem.ItemManager;
+import classsystem.classsystem.PartyManager;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -18,6 +22,7 @@ import org.bukkit.util.Vector;
 public class PlayerScoutHandler extends PlayerClassTemplate {
     ClassSystem plugin = ClassSystem.getInstance();
     CooldownManager cooldownManager = plugin.getCdInstance();
+    PartyManager partyManager = plugin.getPartyInstance();
 
     @Override
     public void onTrigger(PlayerInteractEvent e) {
@@ -30,7 +35,7 @@ public class PlayerScoutHandler extends PlayerClassTemplate {
         double rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
         double kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
         double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
-        if (p.getInventory().getItemInMainHand().getType().equals(Material.BOW)) {
+        if (ItemManager.scoutWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
             if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) {
                 if (p.isSneaking()) {
                     if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Hunter's Mark"))) return;
@@ -39,7 +44,7 @@ public class PlayerScoutHandler extends PlayerClassTemplate {
                 }
             }
         }
-        if (p.getInventory().getItemInMainHand().getType().equals(Material.ARROW)) {
+        if (Tag.ITEMS_ARROWS.isTagged(p.getInventory().getItemInMainHand().getType())) {
             if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) {
                 if (p.isSneaking()) {
 
@@ -63,7 +68,7 @@ public class PlayerScoutHandler extends PlayerClassTemplate {
         p.playSound(pLocation, Sound.ENTITY_ENDER_DRAGON_FLAP, 1, 1);
         //endregion
     }
-    private static boolean hunterMark(ClassSystem plugin, Player p, Location pLocation, double rangeModifier, double cdModifier, CooldownManager cooldownManager) {
+    private boolean hunterMark(ClassSystem plugin, Player p, Location pLocation, double rangeModifier, double cdModifier, CooldownManager cooldownManager) {
         //region Hunter's Mark
         long cooldown = (long) (5000 / cdModifier);
         double range = 32 * rangeModifier;
@@ -71,6 +76,9 @@ public class PlayerScoutHandler extends PlayerClassTemplate {
             return entity != p;
         }));
         if (traceResult == null || !(traceResult.getHitEntity() instanceof LivingEntity)) return true;
+        if (partyManager.findParty(p.getUniqueId()) != null) {
+            if (partyManager.findParty(traceResult.getHitEntity().getUniqueId()) == partyManager.findParty(p.getUniqueId())) return false;
+        }
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Hunter's Mark", cooldown);
         LivingEntity livingEntity = (LivingEntity) traceResult.getHitEntity();
         livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 300, 1));
@@ -93,5 +101,8 @@ public class PlayerScoutHandler extends PlayerClassTemplate {
             particleLoc.setZ(location.getZ() + Math.sin(d) * size);
             location.getWorld().spawnParticle(particle, particleLoc, 1);
         }
+    }
+    public void onTriggerSwap(PlayerSwapHandItemsEvent e) {
+
     }
 }

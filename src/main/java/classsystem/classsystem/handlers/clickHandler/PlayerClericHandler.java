@@ -2,12 +2,16 @@ package classsystem.classsystem.handlers.clickHandler;
 
 import classsystem.classsystem.ClassSystem;
 import classsystem.classsystem.CooldownManager;
+import classsystem.classsystem.ItemManager;
+import classsystem.classsystem.PartyManager;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -19,6 +23,8 @@ import java.util.Collection;
 public class PlayerClericHandler extends PlayerClassTemplate {
     ClassSystem plugin = ClassSystem.getInstance();
     CooldownManager cooldownManager = plugin.getCdInstance();
+
+    PartyManager partyManager = plugin.getPartyInstance();
     @Override
     public void onTrigger(PlayerInteractEvent e) {
         ClassSystem plugin = ClassSystem.getInstance();
@@ -33,7 +39,7 @@ public class PlayerClericHandler extends PlayerClassTemplate {
         double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
 
         //region CLASS ABILITIES
-        if (p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND_HOE)) {
+        if (ItemManager.clericWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
             if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) {
                 double range = 4 * rangeModifier;
                 Collection<Entity> entitiesInRange = p.getNearbyEntities(range, range, range);
@@ -57,17 +63,25 @@ public class PlayerClericHandler extends PlayerClassTemplate {
         }
         //endregion
     }
+
+    public void onTriggerSwap(PlayerSwapHandItemsEvent e) {
+
+    }
     private void demeterBlessing(Player p, Location pLocation, int hpModifier, double cdModifier, int range, Collection<Entity> entitiesInRange) {
         //region Demeter's Blessing
         long cooldown = (long) (10000 / cdModifier);
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Demeter's Blessing", cooldown);
         summonCircle(pLocation, range, Particle.HEART);
-        for (Entity entity : entitiesInRange) {
-            if (!(entity instanceof Player)) continue;
-            ((Player) entity).addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 80, hpModifier*2));
-            p.playSound(pLocation, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+        if (partyManager.findParty(p.getUniqueId()) != null) {
+            for (Entity entity : entitiesInRange) {
+                if (!(entity instanceof LivingEntity)) continue;
+                LivingEntity ally = (LivingEntity) entity;
+                if (!(partyManager.findParty(ally.getUniqueId()) == partyManager.findParty(p.getUniqueId()))) continue;
+                ally.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 80, hpModifier));
+            }
         }
-        p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20, hpModifier));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.HEAL, 1, hpModifier));
+        p.playSound(pLocation, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
         //endregion
     }
     private void dionysusIntoxication(Player p, Location pLocation, double dmgModifier, double cdModifier, int range, Collection<Entity> entitiesInRange) {
@@ -75,12 +89,15 @@ public class PlayerClericHandler extends PlayerClassTemplate {
         long cooldown = (long) (6000 / cdModifier);
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Dionysus' Intoxication", cooldown);
         for (Entity entity : entitiesInRange) {
-            summonCircle(pLocation, range, Particle.SOUL);
-            if (!(entity instanceof Monster)) continue;
-            Monster monster = (Monster) entity;
-            monster.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, (int)(3 * dmgModifier)));
-            monster.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 200, (int)(-3 * dmgModifier)));
+            if (!(entity instanceof LivingEntity)) continue;
+            if (partyManager.findParty(p.getUniqueId()) != null) {
+                if (partyManager.findParty(entity.getUniqueId()) == partyManager.findParty(p.getUniqueId())) continue;
+            }
+            LivingEntity enemy = (LivingEntity) entity;
+            enemy.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 200, (int)(3 * dmgModifier)));
+            enemy.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 200, (int)(-3 * dmgModifier)));
         }
+        summonCircle(pLocation, range, Particle.SOUL);
         p.playSound(pLocation, Sound.ENTITY_WANDERING_TRADER_DRINK_POTION, 1, 1);
         //endregion
     }
@@ -100,13 +117,13 @@ public class PlayerClericHandler extends PlayerClassTemplate {
         //region Aphrodite's Love
         long cooldown = (long) (250 / cdModifier);
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Aphrodite's Love", cooldown);
-        double range = 8 * rangeModifier;
+        double range = 32 * rangeModifier;
         double healing = 4 * hpModifier;
         RayTraceResult traceResult = p.getWorld().rayTraceEntities(p.getEyeLocation(), p.getEyeLocation().getDirection(), range, (entity -> {
             return entity != p;
         }));
         if (traceResult != null) {
-            if (traceResult.getHitEntity() instanceof Player) {
+            if (traceResult.getHitEntity() instanceof Player && (partyManager.findParty(traceResult.getHitEntity().getUniqueId()) == partyManager.findParty(p.getUniqueId())) && partyManager.findParty(p.getUniqueId()) != null) {
                 Player target = (Player) traceResult.getHitEntity();
                 if (target.getHealth() < target.getMaxHealth() && p.getHealth() > healing) {
                     p.setHealth(p.getHealth() - healing);
@@ -116,13 +133,13 @@ public class PlayerClericHandler extends PlayerClassTemplate {
                 target.setHealth(Math.min((target.getHealth() + healing), target.getMaxHealth()));
                 target.getWorld().spawnParticle(Particle.HEART, target.getLocation(), 10);
                 return;
-            } else if (traceResult.getHitEntity() instanceof Monster) {
-                Monster monster = (Monster) traceResult.getHitEntity();
+            } else if (traceResult.getHitEntity() instanceof LivingEntity) {
+                LivingEntity enemy = (LivingEntity) traceResult.getHitEntity();
                 if (p.getHealth() > healing) {
-                    monster.damage(healing, p);
+                    enemy.damage(healing, p);
                     p.setHealth(p.getHealth() - healing);
                     p.getWorld().spawnParticle(Particle.CRIT, pLocation, 10);
-                    monster.getWorld().spawnParticle(Particle.CRIT, monster.getLocation(), 10);
+                    enemy.getWorld().spawnParticle(Particle.CRIT, enemy.getLocation(), 10);
                     p.playSound(pLocation, Sound.ENTITY_GHAST_DEATH, 1, 0.5f);
                 }
             }
