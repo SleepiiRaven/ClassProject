@@ -26,3 +26,9 @@ commands:
     description: Party invite
     usage: /party [invite/accept/remove/leave/list]
     aliases: [p]
+  enchantment:
+    description: Give yourself an enchantment
+    usage: /enchantment [enchantment]
+  items:
+    description: Gives you custom items
+    usage: /items

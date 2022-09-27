@@ -1,6 +1,7 @@
     package classsystem.classsystem.commands;
 
     import classsystem.classsystem.ClassSystem;
+    import classsystem.classsystem.PlayerData;
     import org.bukkit.Bukkit;
     import org.bukkit.ChatColor;
     import org.bukkit.Material;
@@ -28,61 +29,57 @@
         @EventHandler
         public void onInvClick(InventoryClickEvent event) {
             // WHEN ASKING IF A STRING = ANOTHER STRING USE .equals() MUCH LESS BUGGY
-            if (!event.getView().getTitle().equals(invName)) {
-                return;
-            }
-
+            if (!event.getView().getTitle().equals(invName)) return;
             Player p = (Player) event.getWhoClicked();
             int slot = event.getSlot();
             UUID pUUID = p.getUniqueId();
-            String pUUIDString = pUUID.toString();
+            PlayerData playerData = PlayerData.getPlayerData(pUUID);
             String playerClass = "none";
             switch(slot) {
                 //region Rogue
                 case 11:
                     playerClass = "rogue";
-                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                    p.setMaxHealth(20.0 * playerData.getHpModifier());
                     break;
                     //endregion
                 //region Warrior
                 case 12:
                     playerClass = "warrior";
-                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                    p.setMaxHealth(20.0 * playerData.getHpModifier());
                     break;
                     //endregion
                 //region Mage
                 case 13:
                     playerClass = "mage";
-                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                    p.setMaxHealth(20.0 * playerData.getHpModifier());
                     break;
                     //endregion
                 //region Scout
                 case 14:
                     playerClass = "scout";
-                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                    p.setMaxHealth(20.0 * playerData.getHpModifier());
                     break;
                     //endregion
                 //region Cleric
                 case 15:
                     playerClass = "cleric";
-                    p.setMaxHealth(80.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                    p.setMaxHealth(80.0 * playerData.getHpModifier());
                     break;
                     //endregion
                 //region Summoner
                 case 22:
                     playerClass = "summoner";
-                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                    p.setMaxHealth(20.0 * playerData.getHpModifier());
+                    break;
                 //endregion
                 //region Default
                 default:
                     playerClass = "none";
-                    p.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
+                    p.setMaxHealth(20.0 * playerData.getHpModifier());
                     break;
                     //endregion
             }
-            plugin.getConfig().set(pUUIDString + ".class", playerClass);
-
-            plugin.saveConfig();
+            playerData.setPlayerClass(playerClass);
 
             p.closeInventory();
         }

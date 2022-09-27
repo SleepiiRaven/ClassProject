@@ -1,11 +1,14 @@
 package classsystem.classsystem.commands;
 
 import classsystem.classsystem.ClassSystem;
+import classsystem.classsystem.PlayerData;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.UUID;
 
 public class AvatarCommand implements CommandExecutor {
     @Override
@@ -17,12 +20,11 @@ public class AvatarCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        String pUUIDString = player.getUniqueId().toString();
+        UUID pUUID = player.getUniqueId();
 
         ClassSystem plugin = ClassSystem.getInstance();
-        player.setMaxHealth(20.0 * plugin.getConfig().getDouble(pUUIDString + ".hpMultiplier"));
-        plugin.getConfig().set(pUUIDString + ".class", "avatar");
-        plugin.saveConfig();
+        PlayerData.getPlayerData(pUUID).setPlayerClass("avatar");
+        player.setMaxHealth(PlayerData.getPlayerData(pUUID).getHpModifier() * 20);
         player.sendMessage(ChatColor.GOLD + "You are now the Avatar");
         return true;
     }

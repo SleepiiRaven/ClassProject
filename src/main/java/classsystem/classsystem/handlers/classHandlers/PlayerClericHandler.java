@@ -1,13 +1,10 @@
-package classsystem.classsystem.handlers.clickHandler;
+package classsystem.classsystem.handlers.classHandlers;
 
-import classsystem.classsystem.ClassSystem;
-import classsystem.classsystem.CooldownManager;
-import classsystem.classsystem.ItemManager;
-import classsystem.classsystem.PartyManager;
+import classsystem.classsystem.*;
 import org.bukkit.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -18,25 +15,51 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 public class PlayerClericHandler extends PlayerClassTemplate {
     ClassSystem plugin = ClassSystem.getInstance();
     CooldownManager cooldownManager = plugin.getCdInstance();
-
     PartyManager partyManager = plugin.getPartyInstance();
     @Override
     public void onTrigger(PlayerInteractEvent e) {
         ClassSystem plugin = ClassSystem.getInstance();
         if (e.getHand() != EquipmentSlot.HAND) return;
         Player p = e.getPlayer();
-        String pUUID = p.getUniqueId().toString();
+        boolean manaSystem = false;
+        Enchantment manaReplace = ClassSystem.manaReplaceEnchantment;
+        if (p.getInventory().getHelmet() != null) {
+            if (p.getInventory().getHelmet().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getChestplate() != null) {
+            if (p.getInventory().getChestplate().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getLeggings() != null) {
+            if (p.getInventory().getLeggings().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getBoots() != null) {
+            if (p.getInventory().getBoots().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+
+        UUID pUUID = p.getUniqueId();
         Location pLocation = p.getLocation();
-        double hpModifier = plugin.getConfig().getInt(pUUID + ".hpMultiplier");
-        double dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
-        double rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
-        double kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
-        double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
+        double dmgModifier = PlayerData.getPlayerData(pUUID).getDmgModifier();
+        double rangeModifier = PlayerData.getPlayerData(pUUID).getRangeModifier();
+        double kbModifier = PlayerData.getPlayerData(pUUID).getKbModifier();
+        double cdModifier = PlayerData.getPlayerData(pUUID).getCdModifier();
+        double hpModifier = PlayerData.getPlayerData(pUUID).getHpModifier();
+        int mana = PlayerData.getPlayerData(pUUID).getMana();
 
         //region CLASS ABILITIES
         if (ItemManager.clericWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
@@ -44,7 +67,13 @@ public class PlayerClericHandler extends PlayerClassTemplate {
                 double range = 4 * rangeModifier;
                 Collection<Entity> entitiesInRange = p.getNearbyEntities(range, range, range);
                 if (p.isSneaking()) {
-                    if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Demeter's Blessing"))) return;
+                    int manaCost = 5;
+                    if (!manaSystem) {
+                        if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Demeter's Blessing"))) return;
+                    } else {
+                        if (!(mana < manaCost)) return;
+                        PlayerData.getPlayerData(pUUID).setMana(mana - manaCost);
+                    }
                     demeterBlessing(p, pLocation, (int) hpModifier, cdModifier, (int) range, entitiesInRange);
                 } else {
                     if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Dionysus' Intoxication"))) return;
@@ -65,7 +94,35 @@ public class PlayerClericHandler extends PlayerClassTemplate {
     }
 
     public void onTriggerSwap(PlayerSwapHandItemsEvent e) {
-
+        Player p = e.getPlayer();
+        boolean manaSystem = false;
+        Enchantment manaReplace = ClassSystem.manaReplaceEnchantment;
+        if (p.getInventory().getHelmet() != null) {
+            if (p.getInventory().getHelmet().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getChestplate() != null) {
+            if (p.getInventory().getChestplate().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getLeggings() != null) {
+            if (p.getInventory().getLeggings().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getBoots() != null) {
+            if (p.getInventory().getBoots().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        UUID pUUID = p.getUniqueId();
+        double dmgModifier = PlayerData.getPlayerData(pUUID).getDmgModifier();
+        double rangeModifier = PlayerData.getPlayerData(pUUID).getRangeModifier();
+        double kbModifier = PlayerData.getPlayerData(pUUID).getKbModifier();
+        double cdModifier = PlayerData.getPlayerData(pUUID).getCdModifier();
+        double hpModifier = PlayerData.getPlayerData(pUUID).getHpModifier();
     }
     private void demeterBlessing(Player p, Location pLocation, int hpModifier, double cdModifier, int range, Collection<Entity> entitiesInRange) {
         //region Demeter's Blessing

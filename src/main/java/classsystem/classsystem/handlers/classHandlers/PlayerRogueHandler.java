@@ -1,15 +1,11 @@
-package classsystem.classsystem.handlers.clickHandler;
+package classsystem.classsystem.handlers.classHandlers;
 
-import classsystem.classsystem.ClassSystem;
-import classsystem.classsystem.CooldownManager;
-import classsystem.classsystem.ItemManager;
-import classsystem.classsystem.PartyManager;
+import classsystem.classsystem.*;
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -17,11 +13,13 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
-import sun.jvm.hotspot.debugger.win32.coff.DebugVC50SymbolEnums;
 
 import java.util.Collection;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class PlayerRogueHandler extends PlayerClassTemplate {
     ClassSystem plugin = ClassSystem.getInstance();
@@ -35,12 +33,35 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         if (e.getHand() != EquipmentSlot.HAND) return;
         //region Set Variables
         Player p = e.getPlayer();
-        String pUUID = p.getUniqueId().toString();
+        boolean manaSystem = false;
+        Enchantment manaReplace = ClassSystem.manaReplaceEnchantment;
+        if (p.getInventory().getHelmet() != null) {
+            if (p.getInventory().getHelmet().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getChestplate() != null) {
+            if (p.getInventory().getChestplate().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getLeggings() != null) {
+            if (p.getInventory().getLeggings().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getBoots() != null) {
+            if (p.getInventory().getBoots().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        UUID pUUID = p.getUniqueId();
         Location pLocation = p.getLocation();
-        double dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
-        double rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
-        double kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
-        double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
+        double dmgModifier = PlayerData.getPlayerData(pUUID).getDmgModifier();
+        double rangeModifier = PlayerData.getPlayerData(pUUID).getRangeModifier();
+        double kbModifier = PlayerData.getPlayerData(pUUID).getKbModifier();
+        double cdModifier = PlayerData.getPlayerData(pUUID).getCdModifier();
+        double hpModifier = PlayerData.getPlayerData(pUUID).getHpModifier();
         //endregion
         //region CLASS ABILITIES
         if (ItemManager.rogueWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
@@ -62,7 +83,44 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
         //endregion
     }
     public void onTriggerSwap(PlayerSwapHandItemsEvent e) {
-
+        ClassSystem plugin = ClassSystem.getInstance();
+        //region Set Variables
+        Player p = e.getPlayer();
+        boolean manaSystem = false;
+        Enchantment manaReplace = ClassSystem.manaReplaceEnchantment;
+        if (p.getInventory().getHelmet() != null) {
+            if (p.getInventory().getHelmet().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getChestplate() != null) {
+            if (p.getInventory().getChestplate().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getLeggings() != null) {
+            if (p.getInventory().getLeggings().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getBoots() != null) {
+            if (p.getInventory().getBoots().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        UUID pUUID = p.getUniqueId();
+        Location pLocation = p.getLocation();
+        double dmgModifier = PlayerData.getPlayerData(pUUID).getDmgModifier();
+        double rangeModifier = PlayerData.getPlayerData(pUUID).getRangeModifier();
+        double kbModifier = PlayerData.getPlayerData(pUUID).getKbModifier();
+        double cdModifier = PlayerData.getPlayerData(pUUID).getCdModifier();
+        double hpModifier = PlayerData.getPlayerData(pUUID).getHpModifier();
+        //endregion
+        if (ItemManager.rogueWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
+            if (!(cooldownManager.isCooldownDone(p.getUniqueId(), "Dagger Throw"))) return;
+            daggerThrow(p, dmgModifier, rangeModifier, kbModifier, cooldownManager, cdModifier);
+            e.setCancelled(true);
+        }
     }
 
     private void teleport(PlayerInteractEvent e, Player p, Location pLocation, double rangeModifier, double cdModifier) {
@@ -103,7 +161,7 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
     private boolean shadowSneak(Player p, Location pLocation, double rangeModifier, double cdModifier, CooldownManager cooldownManager) {
         //region Shadow Sneak
         long cooldown = (long) (3000 / cdModifier);
-        double range = 32 * rangeModifier;
+        double range = 16 * rangeModifier;
         RayTraceResult traceResult = p.getWorld().rayTraceEntities(p.getEyeLocation(), p.getEyeLocation().getDirection(), range, (entity -> {
             return entity != p;
         }));
@@ -150,6 +208,60 @@ public class PlayerRogueHandler extends PlayerClassTemplate {
             Player player = (Player) entity;
             player.playSound(pLocation, Sound.ENTITY_BLAZE_SHOOT, 1, 1);
         }
+        //endregion
+    }
+
+    private void daggerThrow(Player p, double dmgModifier, double rangeModifier, double kbModifier, CooldownManager cooldownManager, double cdModifier) {
+        //region Mana Burst
+        long cooldown = (long) (5000 / cdModifier);
+        cooldownManager.setCooldownFromNow(p.getUniqueId(), "Dagger Throw", cooldown);
+        //region Variables
+        double range = 25 * rangeModifier;
+        double distance = 5 * rangeModifier;
+        double collision = 1 * rangeModifier;
+        double damage = 0.5 * dmgModifier;
+        double kb = ThreadLocalRandom.current().nextDouble(2, 2.3) * kbModifier;
+        //endregion
+        //region Shoot Loop
+        Location viewPos = p.getEyeLocation();
+        Vector viewDir = viewPos.getDirection();
+        for (double t = 0; t < distance; t += 0.5) {
+            //region Particles
+            double x = viewDir.getX() * t;
+            double y = viewDir.getY() * t;
+            double z = viewDir.getZ() * t;
+            viewPos.add(x, y, z);
+            p.getWorld().spawnParticle(Particle.REDSTONE, viewPos, 1, 0, 0, 0, new Particle.DustOptions(Color.GRAY, 2));
+            //endregion
+            //region Damage
+            Collection<Entity> closebyMonsters = p.getWorld().getNearbyEntities(viewPos, range, range, range);
+            for (Entity closebyMonster : closebyMonsters) {
+                // .distance is resource intensive, so get it squared (SO SQUARE YOUR RANGE)
+                // make sure it's a living entity, not an armor stand or something, continue skips the current loop
+                if (!(closebyMonster instanceof LivingEntity) || (closebyMonster == p)) continue;
+                if (partyManager.findParty(p.getUniqueId()) != null) {
+                    if (partyManager.findParty(closebyMonster.getUniqueId()) == partyManager.findParty(p.getUniqueId())) continue;
+                }
+                LivingEntity livingMonster = (LivingEntity) closebyMonster;
+                // Get the entitie's collision box and the viewpos' xyz
+                BoundingBox monsterBoundingBox = livingMonster.getBoundingBox();
+                BoundingBox collisionBox = BoundingBox.of(viewPos, collision, collision, collision);
+                /**double viewPosX = viewPos.getX();
+                 double viewPosY = viewPos.getY();
+                 double viewPosZ = viewPos.getZ();**/
+                // if our particle goes through the enemy's hitbox, we keep going through the loop, if we don't we use continue;
+                if (!(monsterBoundingBox.overlaps(collisionBox))) continue;
+                livingMonster.damage(damage, p);
+                Vector viewNormalized = (viewDir.normalize()).multiply(kb);
+                livingMonster.setVelocity(viewNormalized);
+            }
+            //endregion
+            viewPos.subtract(x, y, z);
+        }
+        //endregion
+        //region Sound
+        p.playSound(p, Sound.ENTITY_ARROW_SHOOT, 1.0f, 0.5f);
+        //endregion
         //endregion
     }
 

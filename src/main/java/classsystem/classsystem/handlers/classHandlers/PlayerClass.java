@@ -1,4 +1,4 @@
-package classsystem.classsystem.handlers.clickHandler;
+package classsystem.classsystem.handlers.classHandlers;
 
 import java.util.function.Supplier;
 

@@ -1,7 +1,8 @@
-package classsystem.classsystem.handlers.clickHandler;
+package classsystem.classsystem.handlers.classHandlers;
 
 import classsystem.classsystem.*;
 import org.bukkit.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -32,12 +33,35 @@ public class PlayerMageHandler extends PlayerClassTemplate {
         ClassSystem plugin = ClassSystem.getInstance();
         if (e.getHand() != EquipmentSlot.HAND) return;
         Player p = e.getPlayer();
-        String pUUID = p.getUniqueId().toString();
+        boolean manaSystem = false;
+        Enchantment manaReplace = ClassSystem.manaReplaceEnchantment;
+        if (p.getInventory().getHelmet() != null) {
+            if (p.getInventory().getHelmet().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getChestplate() != null) {
+            if (p.getInventory().getChestplate().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getLeggings() != null) {
+            if (p.getInventory().getLeggings().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        if (p.getInventory().getBoots() != null) {
+            if (p.getInventory().getBoots().containsEnchantment(manaReplace)) {
+                manaSystem = true;
+            }
+        }
+        UUID pUUID = p.getUniqueId();
         Location pLocation = p.getLocation();
-        double dmgModifier = plugin.getConfig().getInt(pUUID + ".dmgMultiplier");
-        double rangeModifier = plugin.getConfig().getInt(pUUID + ".rangeMultiplier");
-        double kbModifier = plugin.getConfig().getInt(pUUID + ".kbMultiplier");
-        double cdModifier = plugin.getConfig().getInt(pUUID + ".cdMultiplier");
+        double dmgModifier = PlayerData.getPlayerData(pUUID).getDmgModifier();
+        double rangeModifier = PlayerData.getPlayerData(pUUID).getRangeModifier();
+        double kbModifier = PlayerData.getPlayerData(pUUID).getKbModifier();
+        double cdModifier = PlayerData.getPlayerData(pUUID).getCdModifier();
+        double hpModifier = PlayerData.getPlayerData(pUUID).getHpModifier();
         //endregion
         //region CLASS ABILITIES
         if (ItemManager.mageWeapons.contains(p.getInventory().getItemInMainHand().getType())) {
@@ -64,7 +88,13 @@ public class PlayerMageHandler extends PlayerClassTemplate {
     }
 
     public void onTriggerSwap(PlayerSwapHandItemsEvent e) {
-
+        Player p = e.getPlayer();
+        UUID pUUID = p.getUniqueId();
+        double dmgModifier = PlayerData.getPlayerData(pUUID).getDmgModifier();
+        double rangeModifier = PlayerData.getPlayerData(pUUID).getRangeModifier();
+        double kbModifier = PlayerData.getPlayerData(pUUID).getKbModifier();
+        double cdModifier = PlayerData.getPlayerData(pUUID).getCdModifier();
+        double hpModifier = PlayerData.getPlayerData(pUUID).getHpModifier();
     }
 
 
@@ -74,8 +104,7 @@ public class PlayerMageHandler extends PlayerClassTemplate {
         cooldownManager.setCooldownFromNow(p.getUniqueId(), "Fire Jump", cooldown);
         Entity fireball = p.getWorld().spawnEntity(pLocation, EntityType.FIREBALL);
         p.setVelocity(pLocation.getDirection().multiply(-2));
-        PersistentDataContainer fireballContainer = fireball.getPersistentDataContainer();
-        fireballContainer.set(new NamespacedKey(plugin, "fireJump"), PersistentDataType.STRING, "fireJump");
+        fireball.addScoreboardTag("fireJump");
         //endregion
     }
     private void manaBurst(Player p, double dmgModifier, double rangeModifier, double kbModifier, CooldownManager cooldownManager, double cdModifier) {
